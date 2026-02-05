@@ -1,13 +1,20 @@
--- Enable necessary extensions
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+-- ================================================
+-- SCHEMA IAT: Isolation complète des données IAT
+-- ================================================
+
+-- Créer le schema IAT si il n'existe pas
+CREATE SCHEMA IF NOT EXISTS iat;
+
+-- Enable necessary extensions (dans public, utilisable par tous les schemas)
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp" SCHEMA public;
+CREATE EXTENSION IF NOT EXISTS "pgcrypto" SCHEMA public;
 
 -- ================================================
 -- TABLES: Contenu Culturel
 -- ================================================
 
 -- Table: auteur
-CREATE TABLE auteur (
+CREATE TABLE iat.auteur (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   nom TEXT NOT NULL,
   prenom TEXT,
@@ -18,10 +25,10 @@ CREATE TABLE auteur (
 );
 
 -- Table: livre
-CREATE TABLE livre (
+CREATE TABLE iat.livre (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   titre TEXT NOT NULL,
-  auteur_id UUID REFERENCES auteur(id) ON DELETE SET NULL,
+  auteur_id UUID REFERENCES iat.auteur(id) ON DELETE SET NULL,
   description TEXT,
   couverture_url TEXT,
   annee_publication INTEGER,
@@ -32,7 +39,7 @@ CREATE TABLE livre (
 );
 
 -- Table: album
-CREATE TABLE album (
+CREATE TABLE iat.album (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   titre TEXT NOT NULL,
   artiste TEXT NOT NULL,
@@ -44,10 +51,10 @@ CREATE TABLE album (
 );
 
 -- Table: musique
-CREATE TABLE musique (
+CREATE TABLE iat.musique (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   titre TEXT NOT NULL,
-  album_id UUID REFERENCES album(id) ON DELETE CASCADE,
+  album_id UUID REFERENCES iat.album(id) ON DELETE CASCADE,
   duree_secondes INTEGER,
   fichier_audio_url TEXT,
   numero_piste INTEGER,
@@ -56,7 +63,7 @@ CREATE TABLE musique (
 );
 
 -- Table: video
-CREATE TABLE video (
+CREATE TABLE iat.video (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   titre TEXT NOT NULL,
   description TEXT,
@@ -73,7 +80,7 @@ CREATE TABLE video (
 -- ================================================
 
 -- Table: prevision
-CREATE TABLE prevision (
+CREATE TABLE iat.prevision (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   titre TEXT NOT NULL,
   description TEXT,
@@ -86,7 +93,7 @@ CREATE TABLE prevision (
 );
 
 -- Table: evenement_global
-CREATE TABLE evenement_global (
+CREATE TABLE iat.evenement_global (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   titre TEXT NOT NULL,
   description TEXT,
@@ -104,7 +111,7 @@ CREATE TABLE evenement_global (
 -- ================================================
 
 -- Table: pays
-CREATE TABLE pays (
+CREATE TABLE iat.pays (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   nom TEXT NOT NULL UNIQUE,
   code_iso TEXT UNIQUE,
@@ -117,7 +124,7 @@ CREATE TABLE pays (
 );
 
 -- Table: periode
-CREATE TABLE periode (
+CREATE TABLE iat.periode (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   nom TEXT NOT NULL,
   date_debut DATE,
@@ -128,7 +135,7 @@ CREATE TABLE periode (
 );
 
 -- Table: recommandation_survie
-CREATE TABLE recommandation_survie (
+CREATE TABLE iat.recommandation_survie (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   titre TEXT NOT NULL,
   description TEXT,
@@ -143,7 +150,7 @@ CREATE TABLE recommandation_survie (
 -- ================================================
 
 -- Table: utilisateur
-CREATE TABLE utilisateur (
+CREATE TABLE iat.utilisateur (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   email TEXT UNIQUE NOT NULL,
   nom TEXT,
@@ -155,9 +162,9 @@ CREATE TABLE utilisateur (
 );
 
 -- Table: consultation
-CREATE TABLE consultation (
+CREATE TABLE iat.consultation (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  utilisateur_id UUID REFERENCES utilisateur(id) ON DELETE CASCADE,
+  utilisateur_id UUID REFERENCES iat.utilisateur(id) ON DELETE CASCADE,
   contenu_type TEXT CHECK (contenu_type IN ('livre', 'musique', 'video', 'prevision', 'evenement', 'pays', 'recommandation')),
   contenu_id UUID NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -168,7 +175,7 @@ CREATE TABLE consultation (
 -- ================================================
 
 -- Table: question_faq
-CREATE TABLE question_faq (
+CREATE TABLE iat.question_faq (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   question TEXT NOT NULL,
   reponse TEXT NOT NULL,
@@ -179,7 +186,7 @@ CREATE TABLE question_faq (
 );
 
 -- Table: evenement
-CREATE TABLE evenement (
+CREATE TABLE iat.evenement (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   titre TEXT NOT NULL,
   description TEXT,
@@ -195,7 +202,7 @@ CREATE TABLE evenement (
 -- ================================================
 
 -- Table: metrique
-CREATE TABLE metrique (
+CREATE TABLE iat.metrique (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   nom_metrique TEXT NOT NULL,
   valeur NUMERIC,
@@ -209,76 +216,76 @@ CREATE TABLE metrique (
 -- ================================================
 
 -- Enable RLS on all tables
-ALTER TABLE auteur ENABLE ROW LEVEL SECURITY;
-ALTER TABLE livre ENABLE ROW LEVEL SECURITY;
-ALTER TABLE album ENABLE ROW LEVEL SECURITY;
-ALTER TABLE musique ENABLE ROW LEVEL SECURITY;
-ALTER TABLE video ENABLE ROW LEVEL SECURITY;
-ALTER TABLE prevision ENABLE ROW LEVEL SECURITY;
-ALTER TABLE evenement_global ENABLE ROW LEVEL SECURITY;
-ALTER TABLE pays ENABLE ROW LEVEL SECURITY;
-ALTER TABLE periode ENABLE ROW LEVEL SECURITY;
-ALTER TABLE recommandation_survie ENABLE ROW LEVEL SECURITY;
-ALTER TABLE utilisateur ENABLE ROW LEVEL SECURITY;
-ALTER TABLE consultation ENABLE ROW LEVEL SECURITY;
-ALTER TABLE question_faq ENABLE ROW LEVEL SECURITY;
-ALTER TABLE evenement ENABLE ROW LEVEL SECURITY;
-ALTER TABLE metrique ENABLE ROW LEVEL SECURITY;
+ALTER TABLE iat.auteur ENABLE ROW LEVEL SECURITY;
+ALTER TABLE iat.livre ENABLE ROW LEVEL SECURITY;
+ALTER TABLE iat.album ENABLE ROW LEVEL SECURITY;
+ALTER TABLE iat.musique ENABLE ROW LEVEL SECURITY;
+ALTER TABLE iat.video ENABLE ROW LEVEL SECURITY;
+ALTER TABLE iat.prevision ENABLE ROW LEVEL SECURITY;
+ALTER TABLE iat.evenement_global ENABLE ROW LEVEL SECURITY;
+ALTER TABLE iat.pays ENABLE ROW LEVEL SECURITY;
+ALTER TABLE iat.periode ENABLE ROW LEVEL SECURITY;
+ALTER TABLE iat.recommandation_survie ENABLE ROW LEVEL SECURITY;
+ALTER TABLE iat.utilisateur ENABLE ROW LEVEL SECURITY;
+ALTER TABLE iat.consultation ENABLE ROW LEVEL SECURITY;
+ALTER TABLE iat.question_faq ENABLE ROW LEVEL SECURITY;
+ALTER TABLE iat.evenement ENABLE ROW LEVEL SECURITY;
+ALTER TABLE iat.metrique ENABLE ROW LEVEL SECURITY;
 
 -- Policies: Public read access for content tables
-CREATE POLICY "Public read access" ON auteur FOR SELECT USING (true);
-CREATE POLICY "Public read access" ON livre FOR SELECT USING (true);
-CREATE POLICY "Public read access" ON album FOR SELECT USING (true);
-CREATE POLICY "Public read access" ON musique FOR SELECT USING (true);
-CREATE POLICY "Public read access" ON video FOR SELECT USING (true);
-CREATE POLICY "Public read access" ON prevision FOR SELECT USING (true);
-CREATE POLICY "Public read access" ON evenement_global FOR SELECT USING (true);
-CREATE POLICY "Public read access" ON pays FOR SELECT USING (true);
-CREATE POLICY "Public read access" ON periode FOR SELECT USING (true);
-CREATE POLICY "Public read access" ON recommandation_survie FOR SELECT USING (true);
-CREATE POLICY "Public read access" ON question_faq FOR SELECT USING (true);
-CREATE POLICY "Public read access" ON evenement FOR SELECT USING (true);
+CREATE POLICY "Public read access" ON iat.auteur FOR SELECT USING (true);
+CREATE POLICY "Public read access" ON iat.livre FOR SELECT USING (true);
+CREATE POLICY "Public read access" ON iat.album FOR SELECT USING (true);
+CREATE POLICY "Public read access" ON iat.musique FOR SELECT USING (true);
+CREATE POLICY "Public read access" ON iat.video FOR SELECT USING (true);
+CREATE POLICY "Public read access" ON iat.prevision FOR SELECT USING (true);
+CREATE POLICY "Public read access" ON iat.evenement_global FOR SELECT USING (true);
+CREATE POLICY "Public read access" ON iat.pays FOR SELECT USING (true);
+CREATE POLICY "Public read access" ON iat.periode FOR SELECT USING (true);
+CREATE POLICY "Public read access" ON iat.recommandation_survie FOR SELECT USING (true);
+CREATE POLICY "Public read access" ON iat.question_faq FOR SELECT USING (true);
+CREATE POLICY "Public read access" ON iat.evenement FOR SELECT USING (true);
 
 -- Policies: Admin full access for content tables
-CREATE POLICY "Admin full access" ON auteur FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
-CREATE POLICY "Admin full access" ON livre FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
-CREATE POLICY "Admin full access" ON album FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
-CREATE POLICY "Admin full access" ON musique FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
-CREATE POLICY "Admin full access" ON video FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
-CREATE POLICY "Admin full access" ON prevision FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
-CREATE POLICY "Admin full access" ON evenement_global FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
-CREATE POLICY "Admin full access" ON pays FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
-CREATE POLICY "Admin full access" ON periode FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
-CREATE POLICY "Admin full access" ON recommandation_survie FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
-CREATE POLICY "Admin full access" ON question_faq FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
-CREATE POLICY "Admin full access" ON evenement FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
+CREATE POLICY "Admin full access" ON iat.auteur FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
+CREATE POLICY "Admin full access" ON iat.livre FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
+CREATE POLICY "Admin full access" ON iat.album FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
+CREATE POLICY "Admin full access" ON iat.musique FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
+CREATE POLICY "Admin full access" ON iat.video FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
+CREATE POLICY "Admin full access" ON iat.prevision FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
+CREATE POLICY "Admin full access" ON iat.evenement_global FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
+CREATE POLICY "Admin full access" ON iat.pays FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
+CREATE POLICY "Admin full access" ON iat.periode FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
+CREATE POLICY "Admin full access" ON iat.recommandation_survie FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
+CREATE POLICY "Admin full access" ON iat.question_faq FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
+CREATE POLICY "Admin full access" ON iat.evenement FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
 
 -- Policies: Utilisateur table
-CREATE POLICY "Users can view their own data" ON utilisateur FOR SELECT USING (auth.uid() = id);
-CREATE POLICY "Users can update their own data" ON utilisateur FOR UPDATE USING (auth.uid() = id);
-CREATE POLICY "Admin full access on users" ON utilisateur FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
+CREATE POLICY "Users can view their own data" ON iat.utilisateur FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "Users can update their own data" ON iat.utilisateur FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "Admin full access on users" ON iat.utilisateur FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
 
 -- Policies: Consultation table
-CREATE POLICY "Users can view their own consultations" ON consultation FOR SELECT USING (auth.uid() = utilisateur_id);
-CREATE POLICY "Users can insert their own consultations" ON consultation FOR INSERT WITH CHECK (auth.uid() = utilisateur_id);
-CREATE POLICY "Admin full access on consultations" ON consultation FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
+CREATE POLICY "Users can view their own consultations" ON iat.consultation FOR SELECT USING (auth.uid() = utilisateur_id);
+CREATE POLICY "Users can insert their own consultations" ON iat.consultation FOR INSERT WITH CHECK (auth.uid() = utilisateur_id);
+CREATE POLICY "Admin full access on consultations" ON iat.consultation FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
 
 -- Policies: Metrique table
-CREATE POLICY "Public read access" ON metrique FOR SELECT USING (true);
-CREATE POLICY "Admin full access" ON metrique FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
+CREATE POLICY "Public read access" ON iat.metrique FOR SELECT USING (true);
+CREATE POLICY "Admin full access" ON iat.metrique FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
 
 -- ================================================
 -- INDEXES for Performance
 -- ================================================
 
-CREATE INDEX idx_livre_auteur ON livre(auteur_id);
-CREATE INDEX idx_musique_album ON musique(album_id);
-CREATE INDEX idx_consultation_utilisateur ON consultation(utilisateur_id);
-CREATE INDEX idx_consultation_contenu ON consultation(contenu_type, contenu_id);
-CREATE INDEX idx_prevision_date ON prevision(date_prevue);
-CREATE INDEX idx_evenement_global_date ON evenement_global(date_debut, date_fin);
-CREATE INDEX idx_pays_nom ON pays(nom);
-CREATE INDEX idx_utilisateur_email ON utilisateur(email);
+CREATE INDEX idx_livre_auteur ON iat.livre(auteur_id);
+CREATE INDEX idx_musique_album ON iat.musique(album_id);
+CREATE INDEX idx_consultation_utilisateur ON iat.consultation(utilisateur_id);
+CREATE INDEX idx_consultation_contenu ON iat.consultation(contenu_type, contenu_id);
+CREATE INDEX idx_prevision_date ON iat.prevision(date_prevue);
+CREATE INDEX idx_evenement_global_date ON iat.evenement_global(date_debut, date_fin);
+CREATE INDEX idx_pays_nom ON iat.pays(nom);
+CREATE INDEX idx_utilisateur_email ON iat.utilisateur(email);
 
 -- ================================================
 -- TRIGGERS for updated_at
@@ -292,16 +299,16 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER update_auteur_updated_at BEFORE UPDATE ON auteur FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_livre_updated_at BEFORE UPDATE ON livre FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_album_updated_at BEFORE UPDATE ON album FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_musique_updated_at BEFORE UPDATE ON musique FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_video_updated_at BEFORE UPDATE ON video FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_prevision_updated_at BEFORE UPDATE ON prevision FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_evenement_global_updated_at BEFORE UPDATE ON evenement_global FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_pays_updated_at BEFORE UPDATE ON pays FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_periode_updated_at BEFORE UPDATE ON periode FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_recommandation_survie_updated_at BEFORE UPDATE ON recommandation_survie FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_utilisateur_updated_at BEFORE UPDATE ON utilisateur FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_question_faq_updated_at BEFORE UPDATE ON question_faq FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_evenement_updated_at BEFORE UPDATE ON evenement FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_auteur_updated_at BEFORE UPDATE ON iat.auteur FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_livre_updated_at BEFORE UPDATE ON iat.livre FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_album_updated_at BEFORE UPDATE ON iat.album FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_musique_updated_at BEFORE UPDATE ON iat.musique FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_video_updated_at BEFORE UPDATE ON iat.video FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_prevision_updated_at BEFORE UPDATE ON iat.prevision FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_evenement_global_updated_at BEFORE UPDATE ON iat.evenement_global FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_pays_updated_at BEFORE UPDATE ON iat.pays FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_periode_updated_at BEFORE UPDATE ON iat.periode FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_recommandation_survie_updated_at BEFORE UPDATE ON iat.recommandation_survie FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_utilisateur_updated_at BEFORE UPDATE ON iat.utilisateur FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_question_faq_updated_at BEFORE UPDATE ON iat.question_faq FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_evenement_updated_at BEFORE UPDATE ON iat.evenement FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
